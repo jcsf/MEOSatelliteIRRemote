@@ -1,22 +1,3 @@
-/*
- * IRremote: IRsendRawDemo - demonstrates sending IR codes with sendRaw
- * An IR LED must be connected to Arduino PWM pin 3.
- * Version 0.1 July, 2009
- * Copyright 2009 Ken Shirriff
- * http://arcfn.com
- *
- * IRsendRawDemo - added by AnalysIR (via www.AnalysIR.com), 24 August 2015
- *
- * This example shows how to send a RAW signal using the IRremote library.
- * The example signal is actually a 32 bit NEC signal.
- * Remote Control button: LGTV Power On/Off. 
- * Hex Value: 0x20DF10EF, 32 bits
- * 
- * It is more efficient to use the sendNEC function to send NEC signals. 
- * Use of sendRaw here, serves only as an example of using the function.
- * 
- */
-
 #include <ESP8266WiFi.h>
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -57,7 +38,6 @@ uint16_t nine[36] = {2650,850,500,850,400,450,500,400,450,850,900,450,450,400,90
 uint16_t zero[38] = {2700,800,500,850,450,400,500,400,1300,1350,400,450,900,850,450,450,950,350,500,400,500,850,500,350,500,400,450,400,500,400,500,400,500,350,450,450,500};
 
 IRsend irsend(IRLED);
-int number;
 
 /* WI-FI CONNECTION VARIABLES */
 const char* ssid = "ADSLPT-TR36402B";
@@ -71,51 +51,54 @@ IPAddress subnet(255, 255, 255, 0);
 
 void setup() {
   irsend.begin();
-  number = 2;
   Serial.begin(115200);
 
-  // Connect to WiFi network
-  WiFi.config(ip, gateway, subnet); 
-  WiFi.begin(ssid, password);
- 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  Serial.println("WiFi connected");
- 
-  // Start the server
-  server.begin();
-  Serial.println("Server started");
- 
-  // Print the IP address
-  Serial.print("Use this URL : ");
-  Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println(":80");
+  startWIFI();
 }
 
-void loop() {  
-  // Check if a client has connected
+void loop() {
+  //Reconnect WiFi If Disconnected
+  if (WiFi.status() != WL_CONNECTED) {
+      startWIFI();
+      return;
+  }
+  
+  //Check If a Client has Connected
   WiFiClient client = server.available();
   if (!client) {
     return;
   }
  
-  // Wait until the client sends some data
+  // Wait Until the Client Sends Some Data
   Serial.println("New Client");
+  long startTime = millis();
   while(!client.available()){
+    if((millis() - startTime) > 3000) {
+      client.flush();
+      Serial.println("Client Timeout");
+      Serial.println("");
+      return;
+    }
     delay(1);
   }
  
-  // Read the first line of the request
+  // Read the First Line of The Request
   String request = client.readStringUntil('\r');
   Serial.println(request);
   client.flush();
  
-  receiveRequest(request);
-    
+  if(receiveRequest(request) == 0) {
+    view(client);
+  } else {
+    redirect(client);
+  }
+  
+  delay(1);
+  Serial.println("Client Disconnected");
+  Serial.println("");
+}
+
+int receiveRequest(String request) {
   if(request.indexOf("GET /channel?") == 0) {
     int index = request.indexOf("?ch=");
     String ch = request.substring(index+4);
@@ -123,21 +106,12 @@ void loop() {
     ch = ch.substring(0, index);
     ch.trim();
     IRRemoteLogic(ch);
-    redirect(client);
+    return -1;
   } else if(request.compareTo("GET / HTTP/1.1") != 0) {
-    redirect(client);
+    return -1;
   } else {
-    view(client);
+    return 0;
   }
-  
-  delay(1);
-  Serial.println("Client disconnected");
-  Serial.println("");
-}
-
-void receiveRequest(String request) {
-  // Match the request
-  request.indexOf("/number") != -1;
 }
 
 void view(WiFiClient client) {
@@ -220,6 +194,29 @@ void IRRemoteLogic(String number) {
       default:
         break;  
     }
-    delay(1000);
+    delay(500);
   }
+}
+
+void startWIFI() {
+  // Connect to WiFi network
+  WiFi.config(ip, gateway, subnet); 
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+      Serial.print(".");
+      delay(500);
+  }
+  
+  Serial.println("WiFi connected");
+ 
+  // Start the server
+  server.begin();
+  Serial.println("Server started");
+ 
+  // Print the IP address
+  Serial.print("Use this URL : ");
+  Serial.print("http://");
+  Serial.print(WiFi.localIP());
+  Serial.println(":80");
 }
