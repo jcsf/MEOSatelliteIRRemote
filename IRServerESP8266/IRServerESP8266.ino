@@ -40,8 +40,8 @@ uint16_t zero[38] = {2700,800,500,850,450,400,500,400,1300,1350,400,450,900,850,
 IRsend irsend(IRLED);
 
 /* WI-FI CONNECTION VARIABLES */
-const char* ssid = "ADSLPT-TR36402B";
-const char* password = "fontinha";
+const char* ssid = "SSID";
+const char* password = "password";
 
 WiFiServer server(80);
 
@@ -120,11 +120,22 @@ void view(WiFiClient client) {
   client.println("Content-Type: text/html");
   client.println(""); //  do not forget this one
   client.println("<!DOCTYPE HTML>");
-  client.println("<html><body>");
+  client.println("<html>");
+  client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">");
+  client.println("<title>MEO Satelite Remote</title>");
+  client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
+  client.println("body{margin-top: 50px;} h1 {color: #444444; margin: 50px auto 30px;} h3 {color: #444444; margin-bottom: 50px;}");
+  client.println(".button {display: block; width: auto; background-color: #000000; border: none; color: #ffffff; padding: 15px 25px; text-decoration: none; font-size: 20px; cursor: pointer; margin: 0px auto 35px; border-radius: 4px;}");
+  client.println(".text-box {display: block; width: 50%; background-color: #ffffff; border-width: 0px 0px 2px 0px; border-color: #444444; color: #333333; text-align: center; text-decoration: none; font-size: 20px; margin: 0px 25% 35px 25%;}");
+  client.println(".text-box:focus {outline: none;}");
+  client.println("p {font-size: 14px;color: #888;margin-bottom: 10px;}");
+  client.println("</style>");
+  client.println("</head>");
+  client.println("<body>");
   client.println("<h1>Alterar Canal MEO</h1>");
   client.println("<form action=\"/channel\" method=\"get\">");
-  client.println("<input type=\"number\" name=\"ch\" min=\"1\" max=\"248\">");
-  client.println("<input type=\"submit\" value=\"Mudar\">");
+  client.println("<input class=\"text-box\" type=\"number\" name=\"ch\" min=\"1\" max=\"248\" autofocus>");
+  client.println("<input class=\"button\" type=\"submit\" value=\"Mudar\">");
   client.println("</form>");
   client.println("</body></html>");
 }
@@ -137,7 +148,9 @@ void redirect(WiFiClient client) {
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
   client.println("<head>");
-  client.println("<meta http-equiv=\"refresh\" content=\"0;URL='http://192.168.1.5/'\" />");      
+  client.println("<meta http-equiv=\"refresh\" content=\"0;URL='http://192.168.1.5/'\" />");
+  client.println("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">");
+  client.println("<title>MEO Satelite Remote (Redirect)</title>");
   client.println("</head>"); 
   client.println("<body>REDIRECTING...</body>");
   client.println("</html>");
