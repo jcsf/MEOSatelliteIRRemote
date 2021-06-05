@@ -40,6 +40,7 @@ uint16_t zero[38] = {2700,800,500,850,450,400,500,400,1300,1350,400,450,900,850,
 IRsend irsend(IRLED);
 
 /* WI-FI CONNECTION VARIABLES */
+const char* hostname = "MEO Remote Controller";
 const char* ssid = "SSID";
 const char* password = "password";
 
@@ -212,8 +213,14 @@ void IRRemoteLogic(String number) {
 }
 
 void startWIFI() {
+
+  // Config WiFi network
+  WiFi.config(ip, gateway, subnet);
+
+  // Disables Soft AP Wireless
+  WiFi.softAPdisconnect(true);
+
   // Connect to WiFi network
-  WiFi.config(ip, gateway, subnet); 
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
