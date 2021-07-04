@@ -23,6 +23,12 @@
 
 #define IRLED 15
 
+#define IP_ADDRESS_1 192
+#define IP_ADDRESS_2 168
+#define IP_ADDRESS_3 8
+#define IP_ADDRESS_SERVER 5
+#define IP_ADDRESS_GATEWAY 1
+
 uint16_t power[38] = {2700,850,450,900,450,400,500,400,450,850,900,400,450,450,850,900,450,450,850,450,450,450,450,850,500,400,450,400,450,450,900,450,400,900,450,450,400};
 uint16_t ok[36] = {2700,800,500,850,500,350,500,400,500,800,950,400,500,350,950,850,500,350,950,400,500,350,500,850,950,800,950,400,500,350,500,850,500,350,500};
 
@@ -46,8 +52,8 @@ const char* password = "password";
 
 WiFiServer server(80);
 
-IPAddress ip(192, 168, 1, 5);
-IPAddress gateway(192, 168, 1, 1);
+IPAddress ip(IP_ADDRESS_1, IP_ADDRESS_2, IP_ADDRESS_3, IP_ADDRESS_SERVER);
+IPAddress gateway(IP_ADDRESS_1, IP_ADDRESS_2, IP_ADDRESS_3, IP_ADDRESS_GATEWAY);
 IPAddress subnet(255, 255, 255, 0);
 
 void setup() {
@@ -135,7 +141,7 @@ void view(WiFiClient client) {
   client.println("<body>");
   client.println("<h1>Alterar Canal MEO</h1>");
   client.println("<form action=\"/channel\" method=\"get\">");
-  client.println("<input class=\"text-box\" type=\"number\" name=\"ch\" min=\"1\" max=\"248\" autofocus>");
+  client.println("<input class=\"text-box\" type=\"number\" name=\"ch\" min=\"1\" max=\"999\" autofocus>");
   client.println("<input class=\"button\" type=\"submit\" value=\"Mudar\">");
   client.println("</form>");
   client.println("</body></html>");
@@ -149,7 +155,9 @@ void redirect(WiFiClient client) {
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
   client.println("<head>");
-  client.println("<meta http-equiv=\"refresh\" content=\"0;URL='http://192.168.1.5/'\" />");
+  char clientRedirect[128];
+  sprintf(clientRedirect, "<meta http-equiv=\"refresh\" content=\"0;URL='http://%d.%d.%d.%d/'\" />", IP_ADDRESS_1, IP_ADDRESS_2, IP_ADDRESS_3, IP_ADDRESS_SERVER);
+  client.println(clientRedirect);
   client.println("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">");
   client.println("<title>MEO Satelite Remote (Redirect)</title>");
   client.println("</head>"); 
